@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>施策シミュレーター 2026年04月度</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Oswald:wght@600;700&display=swap');
+:root{--sb:#1A1A1A;--sb-l:#F0F0F0;--ym:#CC0022;--ym-l:#FFF0F2;--uq:#0099CC;--uq-l:#E6F7FF;--au:#FF6600;--au-l:#FFF3E6;--wm:#1E4C99;--wm-l:#EEF3FF;--mc:#7C3AED;--mc-l:#F5F0FF;--dark:#0F1923;--ink:#1C2732;--muted:#6B7A8D;--line:#DDE3EC;--bg:#F3F5F9;--white:#FFFFFF;--warn:#FF6B35;--gold:#F59E0B}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:60px}
+.hdr{background:var(--dark);padding:16px 20px 14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.4)}
+.hdr-inner{max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.hdr-title{font-family:'Oswald',sans-serif;font-size:18px;color:#fff;letter-spacing:.05em}
+.hdr-sub{font-size:10px;color:#8899AA;margin-top:1px}
+.hdr-badge{background:var(--warn);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px}
+.wrap{max-width:640px;margin:0 auto;padding:16px 14px}
+.step{background:var(--white);border-radius:14px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:box-shadow .2s}
+.step.active{box-shadow:0 4px 20px rgba(0,0,0,.12)}
+.step-hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;user-select:none}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--line);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .2s}
+.step.done .step-num{background:var(--uq);color:#fff}
+.step.active .step-num{background:var(--dark);color:#fff}
+.step-label{font-size:13px;font-weight:700;color:var(--muted);flex:1}
+.step.done .step-label,.step.active .step-label{color:var(--ink)}
+.step-val{font-size:12px;font-weight:700;color:var(--dark)}
+.step-body{padding:0 14px 14px}
+.opt-grid{display:grid;gap:8px}
+.opt-grid.cols2{grid-template-columns:1fr 1fr}
+.opt-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.opt-grid.cols1{grid-template-columns:1fr}
+.opt-btn{padding:10px 8px;border-radius:10px;border:2px solid var(--line);background:var(--white);font-family:'Noto Sans JP',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;text-align:center;line-height:1.4}
+.opt-btn:hover{border-color:var(--dark);color:var(--dark);transform:translateY(-1px)}
+.opt-btn.sel{color:#fff!important;border-color:transparent}
+.opt-btn .icon{font-size:18px;display:block;margin-bottom:2px}
+.opt-btn[data-c="SoftBank"].sel{background:var(--sb)}
+.opt-btn[data-c="Y!mobile"].sel{background:var(--ym)}
+.opt-btn[data-c="UQ"].sel{background:var(--uq)}
+.opt-btn[data-c="au"].sel{background:var(--au)}
+.opt-btn[data-c="WiMAX"].sel{background:var(--wm)}
+.opt-btn[data-c="macaroon"].sel{background:var(--mc)}
+.opt-btn[data-c="MNP"].sel,.opt-btn[data-c="MNP乗り換え"].sel{background:#C0392B}
+.opt-btn[data-c="新規"].sel{background:#1E4C99}
+.opt-btn[data-c="番号移行"].sel{background:#805600}
+.opt-btn[data-c="端末"].sel,.opt-btn[data-c="端末あり"].sel{background:var(--dark)}
+.opt-btn[data-c="SIM"].sel,.opt-btn[data-c="SIM単体"].sel{background:#2C6E49}
+.sel-wrap{position:relative}
+.sel-wrap select{width:100%;padding:11px 36px 11px 12px;border:2px solid var(--line);border-radius:10px;font-family:'Noto Sans JP',sans-serif;font-size:13px;background:var(--white);color:var(--ink);appearance:none;cursor:pointer;transition:border-color .15s}
+.sel-wrap select:focus{outline:none;border-color:var(--dark)}
+.sel-wrap::after{content:"▾";position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted);font-size:14px}
+.extra-grid{display:grid;gap:6px;margin-top:4px}
+.extra-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:var(--bg);cursor:pointer;transition:background .15s}
+.extra-item:hover{background:var(--line)}
+.extra-item.on{background:#FFFDE7}
+.extra-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s}
+.extra-item.on .extra-check{background:var(--gold);border-color:var(--gold);color:#fff}
+.extra-label{font-size:12px;font-weight:600}
+.extra-sub{font-size:10px;color:var(--muted)}
+#result-wrap{margin-top:14px}
+.res-card{border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.12);animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.res-carrier-bar{padding:14px 18px 12px;display:flex;justify-content:space-between;align-items:center}
+.res-carrier-name{font-family:'Oswald',sans-serif;font-size:20px;color:#fff}
+.res-conditions{font-size:10px;color:rgba(255,255,255,.8);margin-top:2px}
+.res-total-wrap{background:var(--white);padding:20px 18px 16px;text-align:center}
+.res-total-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.res-total-amt{font-family:'Oswald',sans-serif;font-size:52px;font-weight:700;line-height:1.1;margin:4px 0;background:linear-gradient(135deg,var(--dark) 0%,#3A5A7A 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.res-total-amt.warn-amt{background:linear-gradient(135deg,var(--warn) 0%,#CC0000 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.res-warn{font-size:11px;font-weight:700;color:var(--warn);margin-top:2px}
+.res-items{padding:0 18px 16px;background:var(--white)}
+.res-divider{height:1px;background:var(--line);margin:0 -18px 14px}
+.res-item{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--bg)}
+.res-item:last-child{border-bottom:none}
+.res-item-left{flex:1}
+.res-item-code{font-size:9px;font-weight:700;color:var(--muted);font-family:'Oswald',sans-serif}
+.res-item-name{font-size:12px;font-weight:600;color:var(--ink);margin-top:1px;line-height:1.4}
+.res-item-note{font-size:10px;color:var(--muted);margin-top:1px}
+.res-item-amt{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;white-space:nowrap;margin-left:12px;padding-top:2px}
+.no-match{background:var(--white);border-radius:16px;padding:32px 20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.no-match .icon{font-size:40px}
+.no-match p{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.6}
+.reset-btn{display:block;width:100%;margin-top:12px;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--white);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s}
+.reset-btn:hover{border-color:var(--dark);color:var(--dark)}
+@media(max-width:400px){.opt-grid.cols3{grid-template-columns:1fr 1fr}.res-total-amt{font-size:44px}}
+
+/* ── Official campaign card ──────────────────────────────────── */
+.camp-card {
+  background: var(--white);
+  border-radius: 14px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.camp-hdr {
+  padding: 12px 16px;
+  display:flex; align-items:center; gap:10px;
+  background: linear-gradient(135deg,#1A3A6B 0%,#2C5282 100%);
+  cursor:pointer; user-select:none;
+}
+.camp-hdr-icon { font-size:18px; }
+.camp-hdr-text { flex:1; }
+.camp-hdr-title { font-size:13px; font-weight:700; color:#fff; }
+.camp-hdr-sub   { font-size:10px; color:rgba(255,255,255,.7); margin-top:1px; }
+.camp-hdr-toggle { font-size:18px; color:rgba(255,255,255,.7); transition:transform .2s; }
+.camp-hdr-toggle.open { transform:rotate(180deg); }
+.camp-body { padding: 10px 14px 14px; }
+
+/* チェック形式キャンペーン */
+.camp-check-list { display:grid; gap:6px; }
+.camp-check-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:10px;
+  background:var(--bg); border:1.5px solid var(--line);
+  cursor:pointer; transition:all .15s;
+  user-select:none;
+}
+.camp-check-item:hover { border-color:#1A3A6B; background:#EEF3FF; }
+.camp-check-item.checked { background:#E6F7FF; border-color:#0099CC; }
+.camp-check-box {
+  width:20px; height:20px; border-radius:6px;
+  border:2px solid var(--line); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; transition:all .15s;
+  background:var(--white);
+}
+.camp-check-item.checked .camp-check-box {
+  background:#0099CC; border-color:#0099CC; color:#fff;
+}
+.camp-check-info { flex:1; }
+.camp-check-name { font-size:12px; font-weight:600; color:var(--ink); }
+.camp-check-carrier { font-size:10px; color:var(--muted); margin-top:1px; }
+.camp-check-amt {
+  font-family:'Oswald',sans-serif; font-size:16px; font-weight:700;
+  color:#0099CC; white-space:nowrap;
+}
+.camp-check-item.checked .camp-check-amt { color:#005C3B; }
+.camp-check-note { font-size:9px; color:var(--muted); margin-top:2px; line-height:1.3; }
+.camp-none { font-size:12px; color:var(--muted); padding:8px 4px; }
+
+/* ── 施策結果カード ───────────────────────────────────────────── */
+.res-policy-total {
+  background:var(--white); border-radius:12px;
+  padding:14px 16px; margin-top:8px;
+  border-left:4px solid var(--warn);
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+.res-policy-total-label { font-size:10px; font-weight:700; color:var(--muted); letter-spacing:.08em; }
+.res-policy-total-amt {
+  font-family:'Oswald',sans-serif; font-size:36px; font-weight:700;
+  color:var(--ink); margin-top:2px;
+}
+.res-policy-total-amt.warn-color { color:var(--warn); }
+
+/* ── キャンペーン結果カード ───────────────────────────────────── */
+.res-camp-card {
+  background:var(--white); border-radius:12px;
+  padding:14px 16px; margin-top:8px;
+  border-left:4px solid #1A3A6B;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+  animation:slideUp .25s ease;
+}
+.res-camp-label { font-size:10px; font-weight:700; color:var(--muted); letter-spacing:.08em; }
+.res-camp-rows { margin-top:8px; display:grid; gap:4px; }
+.res-camp-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:5px 0; border-bottom:1px solid var(--bg);
+  font-size:12px;
+}
+.res-camp-row:last-child { border-bottom:none; }
+.res-camp-row-name { color:var(--ink); font-weight:500; }
+.res-camp-row-amt  { font-family:'Oswald',sans-serif; font-size:14px; color:#1A3A6B; font-weight:700; }
+.res-camp-total {
+  margin-top:10px; padding-top:10px;
+  border-top:2px solid #1A3A6B;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.res-camp-total-label { font-size:11px; font-weight:700; color:#1A3A6B; }
+.res-camp-total-amt {
+  font-family:'Oswald',sans-serif; font-size:28px; font-weight:700; color:#1A3A6B;
+}
+
+/* ── Admin toggle ────────────────────────────────────────────── */
+
+
+
+
+
+
+/* ── トレンド施策 ────────────────────────────────────────── */
+.trend-acq-block { margin-bottom: 10px; }
+.trend-acq-block:last-child { margin-bottom: 0; }
+.trend-acq-label {
+  font-size: 9px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: 5px; padding-left: 2px;
+}
+
+.trend-section {
+  background: var(--white);
+  border-radius: 14px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.trend-hdr {
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg,#0F1923 0%,#1C2732 100%);
+}
+.trend-hdr-icon { font-size: 18px; }
+.trend-hdr-text { flex: 1; }
+.trend-hdr-title { font-size: 13px; font-weight: 700; color: #fff; }
+.trend-hdr-sub   { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 1px; }
+.trend-body { padding: 12px 14px 14px; }
+.trend-carrier-block { margin-bottom: 14px; }
+.trend-carrier-block:last-child { margin-bottom: 0; }
+.trend-carrier-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 700; color: #fff;
+  padding: 4px 10px; border-radius: 6px; margin-bottom: 8px;
+  display: inline-flex;
+}
+.trend-rows { display: grid; gap: 5px; }
+.trend-row {
+  display: grid; grid-template-columns: 28px 1fr auto;
+  gap: 6px; align-items: center;
+  background: var(--bg); border-radius: 8px; padding: 7px 10px;
+  border-left: 3px solid transparent;
+}
+.trend-row.rank1 { border-left-color: #F59E0B; background: #FFFDE7; }
+.trend-row.rank2 { border-left-color: #94A3B8; background: #F8FAFC; }
+.trend-row.rank3 { border-left-color: #CD7C3A; background: #FDF5EF; }
+.trend-rank {
+  font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 700;
+  text-align: center;
+}
+.trend-row.rank1 .trend-rank { color: #F59E0B; }
+.trend-row.rank2 .trend-rank { color: #94A3B8; }
+.trend-row.rank3 .trend-rank { color: #CD7C3A; }
+.trend-info { flex: 1; min-width: 0; }
+.trend-model { font-size: 11px; font-weight: 600; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trend-acq   { font-size: 9px; color: var(--muted); margin-top: 1px; }
+.trend-amt {
+  font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 700;
+  white-space: nowrap;
+}
+
+
+.trend-toggle-btn {
+  background: none; border: none; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; color: rgba(255,255,255,.7);
+  transition: all .15s;
+}
+.trend-toggle-btn:hover { color: #fff; background: rgba(255,255,255,.15); }
+.trend-body { transition: all .25s ease; overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-inner">
+    <div>
+      <div class="hdr-title">📱 施策シミュレーター</div>
+      <div class="hdr-sub">2026年04月度 — 還元額かんたん確認</div>
+    </div>
+    <div class="hdr-badge">スタッフ用</div>
+  </div>
+</div>
+<div class="wrap">
+  <!-- STEP 1 -->
+  <div class="step active" id="step1">
+    <div class="step-hdr" onclick="toggleStep(1)">
+      <div class="step-num">1</div>
+      <div class="step-label">キャリアを選ぶ</div>
+      <div class="step-val" id="sv1"></div>
+    </div>
+    <div class="step-body">
+      <div class="opt-grid cols2">
+        <button class="opt-btn" data-c="SoftBank" onclick="pick('carrier','SoftBank',this)"><span class="icon">🔴</span>SoftBank</button>
+        <button class="opt-btn" data-c="Y!mobile" onclick="pick('carrier','Y!mobile',this)"><span class="icon">🟡</span>Y!mobile</button>
+        <button class="opt-btn" data-c="UQ" onclick="pick('carrier','UQ',this)"><span class="icon">🟢</span>UQ mobile</button>
+        <button class="opt-btn" data-c="au" onclick="pick('carrier','au',this)"><span class="icon">🔵</span>au</button>
+        <button class="opt-btn" data-c="WiMAX" onclick="pick('carrier','WiMAX',this)"><span class="icon">🌐</span>WiMAX</button>
+        <button class="opt-btn" data-c="macaroon" onclick="pick('carrier','macaroon',this)"><span class="icon">💜</span>macaroon</button>
+      </div>
+    </div>
+  </div>
+  <!-- STEP 2 -->
+  <div class="step" id="step2" style="display:none">
+    <div class="step-hdr" onclick="toggleStep(2)">
+      <div class="step-num">2</div>
+      <div class="step-label">種別を選ぶ</div>
+      <div class="step-val" id="sv2"></div>
+    </div>
+    <div class="step-body">
+      <div class="opt-grid cols2" id="type-grid"></div>
+    </div>
+  </div>
+  <!-- STEP 3 -->
+  <div class="step" id="step3" style="display:none">
+    <div class="step-hdr" onclick="toggleStep(3)">
+      <div class="step-num">3</div>
+      <div class="step-label">獲得種別を選ぶ</div>
+      <div class="step-val" id="sv3"></div>
+    </div>
+    <div class="step-body">
+      <div class="opt-grid cols2" id="acq-grid"></div>
+    </div>
+  </div>
+  <!-- STEP 4 -->
+  <div class="step" id="step4" style="display:none">
+    <div class="step-hdr" onclick="toggleStep(4)">
+      <div class="step-num">4</div>
+      <div class="step-label">端末を選ぶ</div>
+      <div class="step-val" id="sv4"></div>
+    </div>
+    <div class="step-body">
+      <div class="sel-wrap">
+        <select id="device-sel" onchange="pickDevice(this.value)">
+          <option value="">── 端末を選択 ──</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <!-- STEP 5 -->
+  <div class="step" id="step5" style="display:none">
+    <div class="step-hdr" onclick="toggleStep(5)">
+      <div class="step-num">5</div>
+      <div class="step-label">追加条件（該当するもの）</div>
+      <div class="step-val" id="sv5">—</div>
+    </div>
+    <div class="step-body">
+      <div class="extra-grid" id="extra-grid"></div>
+    </div>
+  </div>
+  <div id="result-wrap"></div>
+  <button class="reset-btn" onclick="reset()">🔄 最初からやり直す</button>
+
+
+  <!-- トレンド施策セクション -->
+  <div class="trend-section">
+    <div class="trend-hdr">
+      <div class="trend-hdr-icon">📈</div>
+      <div class="trend-hdr-text">
+        <div class="trend-hdr-title">トレンド施策ランキング</div>
+        <div class="trend-hdr-sub">キャリア別 還元額 TOP3</div>
+      </div>
+      <button class="trend-toggle-btn" id="trend-toggle-btn" onclick="toggleTrend()">▲ 閉じる</button>
+    </div>
+    <div class="trend-body" id="trend-body"></div>
+  </div>
+
+  <!-- CAMPAIGN CARD（チェック形式） -->
+  <div class="camp-card" id="camp-card" style="display:none">
+    <div class="camp-hdr" onclick="toggleCamp()">
+      <div class="camp-hdr-icon">🏆</div>
+      <div class="camp-hdr-text">
+        <div class="camp-hdr-title">オフィシャルキャンペーン</div>
+        <div class="camp-hdr-sub">該当するキャンペーンにチェックを入れてください　※変更はExcelの「キャンペーン管理」シートで行ってください</div>
+      </div>
+      <div class="camp-hdr-toggle open" id="camp-toggle">⌄</div>
+    </div>
+    <div class="camp-body" id="camp-body">
+      <div id="camp-check-list" class="camp-check-list"></div>
+    </div>
+  </div>
+
+  <!-- キャンペーン結果（施策結果とは別表示） -->
+  <div id="camp-result-wrap"></div>
+</div>
+
+
+
+
+</div>
+<script>
+const P=[
+{code:"SBHY02",carrier:"SoftBank",cat:"標準施策",type:"SIM",acq:"MNP",devices:["SIM単体"],amount:16500,note:"docomo/au/楽天MNP",age:"all"},
+{code:"SBHY01",carrier:"SoftBank",cat:"標準施策",type:"SIM",acq:"新規",devices:["SIM単体"],amount:16500,note:"",age:"U18"},
+{code:"SBHY03",carrier:"SoftBank",cat:"標準施策",type:"SIM",acq:"番号移行",devices:["SIM単体"],amount:11000,note:"SB番号移行",age:"all"},
+{code:"SBOC06",carrier:"SoftBank",cat:"おうち割SIM",type:"SIM",acq:"番号移行",devices:["SIM単体"],amount:5500,note:"光/でんきセット必須",age:"all",extraKey:"おうち割"},
+{code:"SBOC08",carrier:"SoftBank",cat:"おうち割SIM",type:"SIM",acq:"番号移行",devices:["SIM単体"],amount:5500,note:"光/でんきセット必須 5/11まで",age:"all",extraKey:"おうち割"},
+{code:"SBHY08",carrier:"SoftBank",cat:"MNP端末",type:"端末",acq:"MNP",devices:["GalaxyA25", "arrowsWE2"],amount:22000,note:"一括のみ",age:"all"},
+{code:"SBOC05",carrier:"SoftBank",cat:"おうち割",type:"端末",acq:"MNP",devices:["iPhone17", "Pixel10", "GalaxyS25"],amount:10000,note:"光/でんきセット必須 4/17-4/20",age:"all",extraKey:"おうち割"},
+{code:"SBOC07",carrier:"SoftBank",cat:"おうち割",type:"端末",acq:"MNP",devices:["iPhone17", "Pixel10", "GalaxyS25"],amount:10000,note:"光/でんきセット必須 5/11まで",age:"all",extraKey:"おうち割"},
+{code:"SBHY05",carrier:"SoftBank",cat:"U18新規",type:"端末",acq:"新規",devices:["iPhone17", "iPhone16", "iPhone16e"],amount:43896,note:"48回割賦のみ",age:"U18"},
+{code:"SBHY06",carrier:"SoftBank",cat:"U18新規",type:"端末",acq:"新規",devices:["Pixel10"],amount:43176,note:"48回割賦のみ",age:"U18"},
+{code:"SBHY07",carrier:"SoftBank",cat:"U18新規",type:"端末",acq:"新規",devices:["GalaxyA25", "arrowsWE2"],amount:22000,note:"一括のみ",age:"U18"},
+{code:"YMHYS01",carrier:"Y!mobile",cat:"SIM MNP",type:"SIM",acq:"MNP",devices:["SIM単体"],amount:16500,note:"",age:"all"},
+{code:"YMTU03",carrier:"Y!mobile",cat:"楽天MNP追加",type:"SIM",acq:"MNP",devices:["SIM単体"],amount:5500,note:"楽天からのMNP限定 4/15〜",age:"all",extraKey:"楽天MNP"},
+{code:"YMTU01",carrier:"Y!mobile",cat:"U18 SIM新規追加",type:"SIM",acq:"新規",devices:["SIM単体"],amount:11000,note:"同名義でも使用者別なら対象",age:"U18"},
+{code:"YMTU02",carrier:"Y!mobile",cat:"O19 SIM新規追加",type:"SIM",acq:"新規",devices:["SIM単体"],amount:5500,note:"1回線契約時のみ",age:"O19"},
+{code:"YMHYM02",carrier:"Y!mobile",cat:"乗り換えトクサポ可",type:"端末",acq:"MNP",devices:["GalaxyS10", "nubiaFrip"],amount:21881,note:"一括・24回・36回のみ",age:"all"},
+{code:"YMHYJ07",carrier:"Y!mobile",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16e(128)"],amount:27311,note:"一括・24回・36回のみ",age:"U18"},
+{code:"YMHYJ08",carrier:"Y!mobile",cat:"U18純新規",type:"端末",acq:"新規",devices:["pixel9a(128)"],amount:28776,note:"一括・24回・36回のみ",age:"U18"},
+{code:"YMOC01",carrier:"Y!mobile",cat:"SB Air",type:"端末",acq:"新規",devices:["SoftBank Air"],amount:22000,note:"施策残し不可",age:"all"},
+{code:"YMOC02",carrier:"Y!mobile",cat:"SB Air追加",type:"端末",acq:"新規",devices:["SoftBank Air"],amount:16500,note:"施策残し可",age:"all"},
+{code:"UQHYS02",carrier:"UQ",cat:"SIM MNP",type:"SIM",acq:"MNP",devices:["SIM単体"],amount:11000,note:"特価販売グループ選択必須",age:"all"},
+{code:"UQTU01",carrier:"UQ",cat:"SIM MNP追加",type:"SIM",acq:"MNP",devices:["SIM単体"],amount:5500,note:"UQHYS02と併用可",age:"all",plan:"コミコミバリュー"},
+{code:"UQTU02",carrier:"UQ",cat:"SIM MNP追加",type:"SIM",acq:"MNP",devices:["SIM単体"],amount:4400,note:"UQHYS02と併用可",age:"all",plan:"トクトク2"},
+{code:"UQOC04",carrier:"UQ",cat:"自宅セット割(SIM MNP)",type:"SIM",acq:"MNP",devices:["SIM単体"],amount:5500,note:"週末限定・SIM単体MNPのみ",age:"all",setWari:"simMNP"},
+{code:"UQOC05",carrier:"UQ",cat:"自宅セット割(ネット)",type:"both",acq:"MNP",devices:["SIM単体", "全機種"],amount:5500,note:"週末限定・SIM端末問わず",age:"all",setWari:"net"},
+{code:"UQOC06",carrier:"UQ",cat:"自宅セット割(でんき)",type:"both",acq:"MNP",devices:["SIM単体", "全機種"],amount:5500,note:"週末限定・SIM端末問わず",age:"all",setWari:"denki"},
+{code:"UQHYS01",carrier:"UQ",cat:"SIM新規",type:"SIM",acq:"新規",devices:["SIM単体"],amount:3300,note:"",age:"all"},
+{code:"UQHYM10",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone17e(256)"],amount:27500,note:"",age:"all"},
+{code:"UQHYM10b",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone17e(512)"],amount:27500,note:"",age:"all"},
+{code:"UQHYM07",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(128)"],amount:33000,note:"",age:"all"},
+{code:"UQHYM07b",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(256)"],amount:27500,note:"",age:"all"},
+{code:"UQHYM07c",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(512)"],amount:27500,note:"",age:"all"},
+{code:"UQHYM09",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16(128)"],amount:44000,note:"",age:"all"},
+{code:"UQHYM06",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["pixel9a"],amount:42900,note:"",age:"all"},
+{code:"UQHYM01",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["BASIOactive2"],amount:20000,note:"",age:"all"},
+{code:"UQHYM02b",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["OPPO A5 5G"],amount:15000,note:"",age:"all"},
+{code:"UQHYM02c",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["Redmi12 5G"],amount:15000,note:"",age:"all"},
+{code:"UQHYM04",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["OPPO Reno13A"],amount:20000,note:"",age:"all"},
+{code:"UQHYM03",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["GalaxyA25"],amount:10000,note:"",age:"all"},
+{code:"UQHYM08",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["arrowsWe2"],amount:10000,note:"",age:"all"},
+{code:"UQHYM05",carrier:"UQ",cat:"乗り換え",type:"端末",acq:"MNP",devices:["らくスマ"],amount:20000,note:"",age:"all"},
+{code:"UQHYM11",carrier:"UQ",cat:"乗り換え一括",type:"端末",acq:"MNP",devices:["arrowsWe2", "OPPO A5 5G", "Redmi12"],amount:5500,note:"一括奨励金",age:"all"},
+{code:"UQFLC01",carrier:"UQ",cat:"早い者勝ち",type:"端末",acq:"MNP",devices:["全機種"],amount:5500,note:"MNP・O60・U18新規 残数限り",age:"all",extraKey:"早い者勝ち"},
+{code:"UQHYJ09",carrier:"UQ",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone17e(256)"],amount:11000,note:"",age:"U18"},
+{code:"UQHYJ09b",carrier:"UQ",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone17e(512)"],amount:11000,note:"",age:"U18"},
+{code:"UQHYJ01e",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["iPhone16e(128)"],amount:11000,note:"",age:"all"},
+{code:"UQHYJ01f",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["iPhone16e(256)"],amount:11000,note:"",age:"all"},
+{code:"UQHYJ01g",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["iPhone16e(512)"],amount:11000,note:"",age:"all"},
+{code:"UQHYJ07",carrier:"UQ",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16e(128)"],amount:16500,note:"",age:"U18"},
+{code:"UQHYJ07b",carrier:"UQ",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16e(256)"],amount:11000,note:"",age:"U18"},
+{code:"UQHYJ07c",carrier:"UQ",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16e(512)"],amount:11000,note:"",age:"U18"},
+{code:"UQHYJ16a",carrier:"UQ",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16(128)"],amount:22000,note:"",age:"U18"},
+{code:"UQHYJ16b",carrier:"UQ",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16(256)"],amount:22000,note:"",age:"U18"},
+{code:"UQHYJ16c",carrier:"UQ",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16(512)"],amount:22000,note:"",age:"U18"},
+{code:"UQHYJ06",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["らくスマ"],amount:20000,note:"",age:"all"},
+{code:"UQHYJ01h",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["BASIO active2"],amount:10000,note:"",age:"all"},
+{code:"UQHYJ02d",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["arrowsWe2"],amount:15000,note:"",age:"all"},
+{code:"UQHYJ02e",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["OPPO A5 5G"],amount:15000,note:"",age:"all"},
+{code:"UQHYJ02f",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["Redmi12 5G"],amount:15000,note:"",age:"all"},
+{code:"UQHYJ01c",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["OPPO Reno13A"],amount:10000,note:"",age:"all"},
+{code:"UQHYJ08",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["pixel9a"],amount:10000,note:"",age:"all"},
+{code:"UQHYJ05",carrier:"UQ",cat:"通常新規",type:"端末",acq:"新規",devices:["GalaxyA25"],amount:10000,note:"",age:"all"},
+{code:"UQHYJ04a",carrier:"UQ",cat:"一括奨励金",type:"端末",acq:"新規",devices:["arrowsWe2"],amount:5000,note:"一括のみ",age:"all"},
+{code:"UQHYJ04c",carrier:"UQ",cat:"一括奨励金",type:"端末",acq:"新規",devices:["OPPO A5 5G"],amount:5000,note:"一括のみ",age:"all"},
+{code:"UQHYJ04d",carrier:"UQ",cat:"一括奨励金",type:"端末",acq:"新規",devices:["Redmi12 5G"],amount:5000,note:"一括のみ",age:"all"},
+{code:"UQHYJ04e",carrier:"UQ",cat:"一括奨励金",type:"端末",acq:"新規",devices:["GalaxyA25"],amount:1092,note:"一括のみ",age:"all"},
+{code:"AUHYS02",carrier:"au",cat:"SIM MNP",type:"SIM",acq:"MNP",devices:["SIM単体"],amount:11000,note:"番号移行対象外",age:"all"},
+{code:"AUHYS02b",carrier:"au",cat:"SIM新規U12",type:"SIM",acq:"新規",devices:["SIM単体"],amount:11000,note:"5歳以上12歳未満限定",age:"U12"},
+{code:"AUHYM12",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone17e(256)"],amount:44000,note:"",age:"all"},
+{code:"AUHYM12_",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone17e(512)"],amount:44000,note:"",age:"all"},
+{code:"AUHYM07",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(128)"],amount:38500,note:"512GBも同額",age:"all"},
+{code:"AUHYM07b",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(256)"],amount:33000,note:"",age:"all"},
+{code:"AUHYM07c",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(512)"],amount:38500,note:"128GBと同額",age:"all"},
+{code:"AUHYM16",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16(128)"],amount:27500,note:"",age:"all"},
+{code:"AUHYM16b",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16(256)"],amount:44000,note:"",age:"all"},
+{code:"AUHYM16c",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16(512)"],amount:44000,note:"",age:"all"},
+{code:"AUHYM11",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["pixel10"],amount:44000,note:"",age:"all"},
+{code:"AUHYM06",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["pixel9a"],amount:42900,note:"",age:"all"},
+{code:"AUHYM01",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["arrowsWE2以外全般"],amount:22000,note:"",age:"all"},
+{code:"AUHYM05",carrier:"au",cat:"乗り換え",type:"端末",acq:"MNP",devices:["pixelシリーズ(9a/10以外)"],amount:22000,note:"",age:"all"},
+{code:"AUHYJ08",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone17e(256)"],amount:33000,note:"",age:"U18"},
+{code:"AUHYJ08b",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone17e(512)"],amount:33000,note:"",age:"U18"},
+{code:"AUHYJ07",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone17(256)"],amount:27500,note:"",age:"U18"},
+{code:"AUHYJ01e",carrier:"au",cat:"通常新規",type:"端末",acq:"新規",devices:["iPhone16e(128)"],amount:11000,note:"",age:"all"},
+{code:"AUHYJ01f",carrier:"au",cat:"通常新規",type:"端末",acq:"新規",devices:["iPhone16e(512)"],amount:11000,note:"256GBは¥5,500のため除外",age:"all"},
+{code:"AUHYJ_u18",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16e(128)"],amount:27500,note:"",age:"U18"},
+{code:"AUHYJ_u18b",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16e(256)"],amount:27500,note:"",age:"U18"},
+{code:"AUHYJ_u18c",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16e(512)"],amount:27500,note:"",age:"U18"},
+{code:"AUHYJ16_",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16(128)"],amount:22000,note:"",age:"U18"},
+{code:"AUHYJ16_b",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16(256)"],amount:22000,note:"",age:"U18"},
+{code:"AUHYJ16_c",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["iPhone16(512)"],amount:22000,note:"",age:"U18"},
+{code:"AUHYJ06",carrier:"au",cat:"U18純新規",type:"端末",acq:"新規",devices:["pixel9a"],amount:42900,note:"",age:"U18"},
+{code:"AUHYJ01",carrier:"au",cat:"純新規",type:"端末",acq:"新規",devices:["arrowsWE2", "Redmi12", "GalaxyA25", "iPhone16e以外全般"],amount:11000,note:"iPhone16e(256G)は¥5,500",age:"all"},
+{code:"AUHYJ02",carrier:"au",cat:"純新規",type:"端末",acq:"新規",devices:["BASIO active3", "BASIO active2"],amount:22000,note:"",age:"all"},
+{code:"AUHYJ03",carrier:"au",cat:"純新規",type:"端末",acq:"新規",devices:["arrowsWE2", "Redmi12", "GalaxyA25", "OPPO A5"],amount:16500,note:"",age:"all"},
+{code:"AUHYM12b",carrier:"au",cat:"番号移行",type:"端末",acq:"番号移行",devices:["iPhone17e(256)"],amount:44000,note:"",age:"all"},
+{code:"AUHYM12c",carrier:"au",cat:"番号移行",type:"端末",acq:"番号移行",devices:["iPhone17e(512)"],amount:33000,note:"",age:"all"},
+{code:"AUHYM09",carrier:"au",cat:"番号移行",type:"端末",acq:"番号移行",devices:["iPhone16e(128)"],amount:27500,note:"",age:"all"},
+{code:"AUHYM09b",carrier:"au",cat:"番号移行",type:"端末",acq:"番号移行",devices:["iPhone16e(256)"],amount:22000,note:"",age:"all"},
+{code:"AUHYM09c",carrier:"au",cat:"番号移行",type:"端末",acq:"番号移行",devices:["iPhone16e(512)"],amount:33000,note:"",age:"all"},
+{code:"AUHYM10",carrier:"au",cat:"番号移行",type:"端末",acq:"番号移行",devices:["iPhone16(128)"],amount:22000,note:"",age:"all"},
+{code:"AUHYM10b",carrier:"au",cat:"番号移行",type:"端末",acq:"番号移行",devices:["iPhone16(256)"],amount:22000,note:"",age:"all"},
+{code:"AUHYM10c",carrier:"au",cat:"番号移行",type:"端末",acq:"番号移行",devices:["iPhone16(512)"],amount:22000,note:"",age:"all"},
+{code:"UQWHY01",carrier:"WiMAX",cat:"標準",type:"端末",acq:"新規",devices:["L13", "DOCK"],amount:21780,note:"",age:"all"},
+{code:"UQWHY02",carrier:"WiMAX",cat:"標準",type:"端末",acq:"新規",devices:["X12"],amount:21780,note:"",age:"all"},
+{code:"DHMHY01",carrier:"macaroon",cat:"特別",type:"端末",acq:"新規",devices:["Macaroon WiFi(20GB)", "Macaroon WiFi(100GB)"],amount:3300,note:"ベネフィットジャパン規定・登録完了ベース",age:"all"},
+{code:"YMCM_iPhone17",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone17e(256)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhone17",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhone17e(256)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_iPhone17",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone17e(512)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhone17",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhone17e(512)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_iPhone16",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16(128)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhone16",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhone16(128)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_iPhone16",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16(256)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhone16",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhone16(256)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_iPhone16",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16(512)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhone16",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhone16(512)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_iPhone16",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(128)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhone16",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhone16e(128)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_iPhone16",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(256)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhone16",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhone16e(256)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_iPhone16",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhone16e(512)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhone16",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhone16e(512)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_iPhoneSE",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhoneSE3(64)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhoneSE",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhoneSE3(64)"],amount:16560,note:"",age:"all"},
+{code:"YMCM_iPhoneSE",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhoneSE3(128)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhoneSE",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhoneSE3(128)"],amount:16560,note:"",age:"all"},
+{code:"YMCM_iPhoneSE",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["iPhoneSE3(256)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_iPhoneSE",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["iPhoneSE3(256)"],amount:16560,note:"",age:"all"},
+{code:"YMCM_AndroidO",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["AndroidOneS10"],amount:21881,note:"",age:"all"},
+{code:"YMCJ_AndroidO",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["AndroidOneS10"],amount:21881,note:"",age:"all"},
+{code:"YMCM_pixel10a",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["pixel10a(128)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_pixel10a",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["pixel10a(128)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_pixel10a",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["pixel10a(256)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_pixel10a",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["pixel10a(256)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_pixel9a1",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["pixel9a(128)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_pixel9a1",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["pixel9a(128)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_pixel9a2",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["pixel9a(256)"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_pixel9a2",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["pixel9a(256)"],amount:11808,note:"",age:"all"},
+{code:"YMCM_motog66y",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["motog66y"],amount:16841,note:"",age:"all"},
+{code:"YMCJ_motog66y",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["motog66y"],amount:11841,note:"",age:"all"},
+{code:"YMCM_AQUOSwis",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["AQUOSwish5"],amount:16880,note:"",age:"all"},
+{code:"YMCJ_AQUOSwis",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["AQUOSwish5"],amount:11881,note:"",age:"all"},
+{code:"YMCM_OPPOA5",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["OPPOA5"],amount:16841,note:"",age:"all"},
+{code:"YMCJ_OPPOA5",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["OPPOA5"],amount:16841,note:"",age:"all"},
+{code:"YMCM_OPPOA3",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["OPPOA3"],amount:21887,note:"",age:"all"},
+{code:"YMCJ_OPPOA3",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["OPPOA3"],amount:21887,note:"",age:"all"},
+{code:"YMCM_OPPOR13A",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["OPPOR13A"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_OPPOR13A",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["OPPOR13A"],amount:11808,note:"",age:"all"},
+{code:"YMCM_nubiaFli",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["nubiaFlip3"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_nubiaFli",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["nubiaFlip3"],amount:11808,note:"",age:"all"},
+{code:"YMCM_nubiaFol",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["nubiaFold"],amount:16560,note:"",age:"all"},
+{code:"YMCJ_nubiaFol",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["nubiaFold"],amount:11808,note:"",age:"all"},
+{code:"YMCM_nubiaS2",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["nubiaS2"],amount:16841,note:"",age:"all"},
+{code:"YMCJ_nubiaS2",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["nubiaS2"],amount:16841,note:"",age:"all"},
+{code:"YMCM_nubiaFli",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["nubiaFlip2"],amount:29673,note:"",age:"all"},
+{code:"YMCJ_nubiaFli",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["nubiaFlip2"],amount:29673,note:"",age:"all"},
+{code:"YMCM_LiberoFl",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["LiberoFlip"],amount:21881,note:"",age:"all"},
+{code:"YMCJ_LiberoFl",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["LiberoFlip"],amount:21881,note:"",age:"all"},
+{code:"YMCM_らくスマa",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["らくスマa"],amount:16672,note:"",age:"all"},
+{code:"YMCJ_らくスマa",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["らくスマa"],amount:11808,note:"",age:"all"},
+{code:"YMCM_かんたんスマホ4",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["かんたんスマホ4"],amount:16633,note:"",age:"all"},
+{code:"YMCJ_かんたんスマホ4",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["かんたんスマホ4"],amount:11808,note:"",age:"all"},
+{code:"YMCM_かんたんスマホ3",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["かんたんスマホ3"],amount:22000,note:"",age:"all"},
+{code:"YMCJ_かんたんスマホ3",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["かんたんスマホ3"],amount:22000,note:"",age:"all"},
+{code:"YMGA25_M",carrier:"Y!mobile",cat:"乗り換え",type:"端末",acq:"MNP",devices:["Galaxy A25 5G"],amount:12089,note:"トクサポ対象外",age:"all"},
+{code:"YMGA25_J",carrier:"Y!mobile",cat:"純新規",type:"端末",acq:"新規",devices:["Galaxy A25 5G"],amount:8208,note:"トクサポ対象外",age:"all"}
+];
+
+const CLR={SoftBank:"#1A1A1A","Y!mobile":"#CC0022",UQ:"#0099CC",au:"#FF6600",WiMAX:"#1E4C99",macaroon:"#7C3AED"};
+const ICN={SoftBank:"⚫","Y!mobile":"🔴",UQ:"🔵",au:"🟠",WiMAX:"🌐",macaroon:"💜"};
+let S={carrier:null,type:null,acq:null,device:null,extras:{}};
+
+function show(id){document.getElementById(id).style.display='block'}
+function hide(id){document.getElementById(id).style.display='none'}
+
+function setActive(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('step'+n);
+  if(el){el.classList.add('active');setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),80)}
+}
+function markDone(n,lbl){
+  const s=document.getElementById('step'+n);
+  if(s){s.classList.remove('active');s.classList.add('done')}
+  const sv=document.getElementById('sv'+n);
+  if(sv)sv.textContent=lbl;
+}
+function toggleStep(n){setActive(n)}
+
+function pick(field,val,btn){
+  btn.closest('.opt-grid').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  S[field]=val;
+  if(field==='carrier'){
+    S.type=S.acq=S.device=null;S.extras={};
+    markDone(1,(ICN[val]||'')+'  '+val);
+    buildStep2();show('step2');setActive(2);
+    hide('step3');hide('step4');hide('step5');
+    document.getElementById('result-wrap').innerHTML='';
+  } else if(field==='type'){
+    S.acq=S.device=null;S.extras={};
+    markDone(2,val==='端末'?'📱 端末あり':'💳 SIM単体');
+    buildStep3();show('step3');setActive(3);
+    hide('step4');hide('step5');
+    document.getElementById('result-wrap').innerHTML='';
+  } else if(field==='acq'){
+    S.device=null;S.extras={};
+    markDone(3,val);
+    if(S.type==='端末'){buildStep4();show('step4');setActive(4);hide('step5');document.getElementById('result-wrap').innerHTML='';}
+    else{hide('step4');buildStep5();show('step5');setActive(5);renderResult();}
+  }
+}
+
+function pickDevice(val){
+  if(!val)return;
+  S.device=val;
+  document.getElementById('sv4').textContent=val;
+  document.getElementById('step4').classList.add('done');
+  buildStep5();show('step5');setActive(5);renderResult();
+}
+
+function buildStep2(){
+  const c=S.carrier;
+  const grid=document.getElementById('type-grid');
+  if(c==='WiMAX'||c==='macaroon'){
+    const lbl=c==='WiMAX'?'📡 ホームルーター':'📶 ポケットWiFi';
+    grid.innerHTML=`<button class="opt-btn" data-c="端末" onclick="pick('type','端末',this)"><span class="icon">${c==='WiMAX'?'📡':'📶'}</span>${lbl.replace(/📡|📶/,'').trim()}</button>`;
+  } else {
+    grid.innerHTML=`<button class="opt-btn" data-c="端末" onclick="pick('type','端末',this)"><span class="icon">📱</span>端末あり</button><button class="opt-btn" data-c="SIM" onclick="pick('type','SIM',this)"><span class="icon">💳</span>SIM単体</button>`;
+  }
+}
+
+function buildStep3(){
+  const c=S.carrier,t=S.type;
+  const avail=[...new Set(P.filter(p=>p.carrier===c&&p.type===t).map(p=>p.acq))];
+  const labels={'新規':'🆕 新規','MNP':'🔄 MNP乗り換え','番号移行':'↩️ 番号移行','MNP/新規':'🔄 MNP / 新規'};
+  const grid=document.getElementById('acq-grid');
+  const cols=avail.length<=2?'cols2':'cols2';
+  grid.className='opt-grid '+cols;
+  grid.innerHTML=avail.map(a=>`<button class="opt-btn" data-c="${a}" onclick="pick('acq','${a}',this)">${labels[a]||a}</button>`).join('');
+}
+
+function buildStep4(){
+  const c=S.carrier,t=S.type,a=S.acq;
+  const devs=[...new Set(P.filter(p=>p.carrier===c&&p.type===t&&(p.acq===a||p.acq==='MNP/新規')).flatMap(p=>p.devices))].sort();
+  const sel=document.getElementById('device-sel');
+  sel.innerHTML='<option value="">── 端末を選択 ──</option>'+devs.map(d=>`<option value="${d}">${d}</option>`).join('');
+  sel.value='';
+  document.getElementById('sv4').textContent='';
+  document.getElementById('step4').classList.remove('done');
+}
+
+function buildStep5(){
+  const c=S.carrier,t=S.type,a=S.acq;
+  const extras=[];
+  if(['SoftBank','Y!mobile','UQ','au'].includes(c))
+    extras.push({id:'U18',label:'使用者18歳以下（U18）',sub:'U18専用施策が追加で対象になる可能性あり'});
+  if(c==='Y!mobile'&&t==='SIM'&&a==='新規')
+    extras.push({id:'O19',label:'使用者19歳以上（O19）',sub:'O19 SIM新規追加¥5,500の対象'});
+  if(c==='SoftBank')
+    extras.push({id:'おうち割',label:'おうち割あり（光 or でんき）',sub:'おうち割週末施策が対象 ¥10,000/¥5,500追加'});
+  if(c==='UQ'&&(a==='MNP'||a==='MNP/新規'))
+    extras.push({id:'早い者勝ち',label:'早い者勝ち施策あり',sub:'残数限り ¥5,500追加'});
+  if(c==='UQ'&&a==='MNP'){
+    if(t==='SIM') extras.push({id:'setWari_simMNP',label:'🏠 自宅セット割 — SIM MNP（週末限定）',sub:'¥5,500 / SIM単体MNPのみ'});
+    extras.push({id:'setWari_net',label:'🌐 自宅セット割 — ネットコース（週末限定）',sub:'¥5,500 / SIM・端末どちらでも可'});
+    extras.push({id:'setWari_denki',label:'⚡ 自宅セット割 — でんきコース（週末限定）',sub:'¥5,500 / SIM・端末どちらでも可'});
+  }
+  if(c==='UQ'&&t==='SIM'&&a==='MNP')
+    extras.push({id:'plan_コミコミバリュー',label:'プラン：コミコミバリュー',sub:'追加施策 ¥5,500'});
+  if(c==='UQ'&&t==='SIM'&&a==='MNP')
+    extras.push({id:'plan_トクトク2',label:'プラン：トクトクプラン2',sub:'追加施策 ¥4,400'});
+  if(c==='Y!mobile'&&a==='MNP')
+    extras.push({id:'楽天MNP',label:'楽天からのMNP',sub:'楽天顧客還元インセンティブ ¥5,500追加(4/15〜)'});
+  S.extras={};
+  const grid=document.getElementById('extra-grid');
+  if(extras.length===0){grid.innerHTML='<p style="font-size:12px;color:var(--muted);padding:4px 0">追加条件なし — 下の結果をご確認ください</p>';return;}
+  grid.innerHTML=extras.map(e=>`<div class="extra-item" id="ex-${e.id}" onclick="toggleExtra('${e.id}')"><div class="extra-check" id="exc-${e.id}"></div><div><div class="extra-label">${e.label}</div><div class="extra-sub">${e.sub}</div></div></div>`).join('');
+}
+
+function toggleExtra(id){
+  S.extras[id]=!S.extras[id];
+  document.getElementById('ex-'+id).classList.toggle('on',S.extras[id]);
+  const ch=document.getElementById('exc-'+id);
+  ch.textContent=S.extras[id]?'✓':'';
+  const n=Object.values(S.extras).filter(Boolean).length;
+  document.getElementById('sv5').textContent=n>0?`${n}件選択`:'—';
+  renderResult();
+}
+
+function devMatch(p,dev){
+  if(!dev)return true;
+  const dl=dev.toLowerCase().replace(/[（(）)　 ]/g,'');
+  return p.devices.some(d=>{
+    if(d==='全機種')return true;
+    const pd=d.toLowerCase().replace(/[（(）)　 ]/g,'');
+    // 完全一致
+    if(dl===pd)return true;
+    // 選択端末がデータ端末を包含（例: iphone16e(128)がiphone16eにマッチ）
+    if(dl.startsWith(pd))return true;
+    // データ端末が選択端末を包含（例: iphone16eがiphone16e(128)にマッチ）
+    if(pd.startsWith(dl))return true;
+    // スラッシュ区切りの各機種と照合
+    const pdBase=pd.split('/')[0].trim();
+    if(dl===pdBase||dl.startsWith(pdBase+'('))return true;
+    return false;
+  });
+}
+
+function renderResult(){
+  const c=S.carrier,t=S.type,a=S.acq,dev=S.device;
+  if(!c||!t||!a)return;
+  if(t==='端末'&&!dev)return;
+
+  let matched=P.filter(p=>{
+    if(p.carrier!==c)return false;
+    if(p.type!==t && p.type!=='both')return false;
+    if(p.acq!==a&&p.acq!=='MNP/新規')return false;
+    if(p.acq==='MNP/新規'&&a!=='MNP'&&a!=='新規')return false;
+    if(t==='端末'&&dev&&!devMatch(p,dev))return false;
+    // Age: skip U18/O19/U12 specific unless extra checked
+    if(p.age==='U18'&&!S.extras['U18'])return false;
+    if(p.age==='O19'&&!S.extras['O19'])return false;
+    if(p.age==='U12')return false;
+    // おうち割
+    if(p.cat==='おうち割'&&!S.extras['おうち割'])return false;
+    // 早い者勝ち
+    if(p.cat==='早い者勝ち'&&!S.extras['早い者勝ち'])return false;
+    // 自宅セット割（種別ごと）
+    if(p.setWari==='simMNP'&&!S.extras['setWari_simMNP'])return false;
+    if(p.setWari==='denki'&&!S.extras['setWari_denki'])return false;
+    if(p.setWari==='net'&&!S.extras['setWari_net'])return false;
+    // でんき・ネット自宅セット割は端末MNPにも適用
+    if(p.type==='both'){if(t!=='SIM'&&t!=='端末')return false;}
+    // プラン追加施策
+    if(p.plan==='コミコミバリュー'&&!S.extras['plan_コミコミバリュー'])return false;
+    if(p.plan==='トクトク2'&&!S.extras['plan_トクトク2'])return false;
+    // 楽天MNP追加
+    if(p.code==='YMTU03'&&!S.extras['楽天MNP'])return false;
+    return true;
+  });
+
+  // Deduplicate
+  const seen=new Set();
+  matched=matched.filter(p=>{if(seen.has(p.code))return false;seen.add(p.code);return true;});
+
+  const total=matched.reduce((s,p)=>s+p.amount,0);
+  const color=CLR[c]||'#333';
+  const wrap=document.getElementById('result-wrap');
+  const condStr=[c,t,a,dev||''].filter(Boolean).join(' / ');
+  const warn=total>=15000;
+
+  if(matched.length===0){
+    wrap.innerHTML=`<div class="no-match"><div class="icon">🔍</div><p>選択した条件に該当する施策が見つかりません。<br>条件を変えてお試しください。</p></div>`;
+    return;
+  }
+
+  wrap.innerHTML=`<div class="res-card">
+    <div class="res-carrier-bar" style="background:${color}">
+      <div><div class="res-carrier-name">${ICN[c]||''} ${c}</div><div class="res-conditions">${condStr}</div></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.8);text-align:right">該当 ${matched.length}施策</div>
+    </div>
+    <div class="res-total-wrap">
+      <div class="res-total-label">MAX 還元額（税込）</div>
+      <div class="res-total-amt${warn?' warn-amt':''}">¥${total.toLocaleString()}</div>
+      ${warn?`<div class="res-warn">⚠️ ¥15,000超 — 必ず責任者に報告してください</div>`:''}
+    </div>
+    <div class="res-items">
+      <div class="res-divider"></div>
+      ${matched.map(p=>`<div class="res-item">
+        <div class="res-item-left">
+          <div class="res-item-code">${p.code}</div>
+          <div class="res-item-name">${p.cat}</div>
+          ${p.note?`<div class="res-item-note">⚠ ${p.note}</div>`:''}
+        </div>
+        <div class="res-item-amt" style="color:${color}">¥${p.amount.toLocaleString()}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function reset(){
+  S={carrier:null,type:null,acq:null,device:null,extras:{}};
+  ['step2','step3','step4','step5'].forEach(hide);
+  document.getElementById('result-wrap').innerHTML='';
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('done','active'));
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('step1').querySelector('.step-body').style.display='block';
+  document.getElementById('step1').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('sel'));
+  ['sv1','sv2','sv3','sv4'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
+  document.getElementById('sv5').textContent='—';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ════════════════════════════════════════════════════════════════
+// OFFICIAL CAMPAIGNS — default data (毎月ここを更新 or 管理画面から)
+// ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+// OFFICIAL CAMPAIGNS DATA（毎月更新）
+// ════════════════════════════════════════════════════════════════
+let CAMPS = [
+  {carrier:"SoftBank光",name:"あんしん乗り換えキャンペーン",amount:100000,note:"他社違約金還元"},
+  {carrier:"SoftBank光",name:"乗り換え新規キャンペーン",amount:31680,note:"工事費実質無料"},
+  {carrier:"Y!mobile",name:"おうち割 光セット(paypay)",amount:15000,note:"光回線セット加入"},
+  {carrier:"Y!mobile",name:"でんき割(paypay)",amount:5000,note:"でんきセット加入"},
+  {carrier:"Y!mobile",name:"紹介キャンペーン(O60)",amount:5000,note:"60歳以上の使用者"},
+  {carrier:"Y!mobile",name:"紹介キャンペーン(U59)",amount:2500,note:"59歳以下の使用者"},
+  {carrier:"UQ",name:"自宅セット割（ネット）",amount:5500,note:"週末限定・全店舗"},
+  {carrier:"UQ",name:"自宅セット割（でんき）",amount:5500,note:"週末限定・全店舗"},
+  {carrier:"NURO光",name:"2ギガ3年3850円/1万CB",amount:69400,note:"戸建て"},
+  {carrier:"NURO光",name:"10ギガ3年4400円/1万CB",amount:69400,note:"戸建て/10ギガ"},
+  {carrier:"NURO光",name:"5万CB/(＋初月無料or設定サポート）",amount:55500,note:"戸建て"},
+  {carrier:"NURO光",name:"4万CB/(＋初月無料or設定サポート）",amount:45500,note:"戸建て"},
+  {carrier:"NURO光",name:"5万CB/(＋初月無料or設定サポート）",amount:50000,note:"戸建て/10ギガ"},
+  {carrier:"NURO光",name:"4万CB/(＋初月無料or設定サポート）",amount:40000,note:"戸建て/10ギガ"},
+  {carrier:"NURO光",name:"3万CB/(＋初月無料or設定サポート）",amount:35500,note:"戸建て"},
+  {carrier:"NURO光",name:"2万CB/(＋初月無料or設定サポート）",amount:25500,note:"戸建て"},
+  {carrier:"NURO光",name:"1万CB/(＋初月無料or設定サポート）",amount:15500,note:"戸建て"},
+  {carrier:"NURO光",name:"CBなし/(＋初月無料or設定サポート）",amount:5500,note:"戸建て"},
+  {carrier:"NURO光",name:"CBなし　割引なし",amount:0,note:"マンション"},
+  {carrier:"NURO光",name:"1万CB　　割引なし",amount:10000,note:"マンション"},
+  {carrier:"NURO光",name:"2.5万CB　割引なし",amount:25000,note:"マンション"},
+  {carrier:"NURO光",name:"CBなし　1,100円割引×5ヶ月",amount:5500,note:"マンション"},
+  {carrier:"NURO光",name:"1万CB　　1,100円割引×5ヶ月",amount:15500,note:"マンション"},
+  {carrier:"NURO光",name:"2.5万CB　1,100円割引×5ヶ月",amount:30500,note:"マンション"},
+  {carrier:"NURO光",name:"CBなし　3,850円割引×2ヶ月",amount:7700,note:"マンション"},
+  {carrier:"NURO光",name:"1万CB　　3,850円割引×2ヶ月",amount:17700,note:"マンション"},
+  {carrier:"NURO光",name:"2.5万CB　3,850円割引×2ヶ月",amount:32700,note:"マンション"},
+  {carrier:"au",name:"auスマートバリュー",amount:0,note:"光回線セット"},
+  {carrier:"WiMAX",name:"WiMAX公式キャンペーン",amount:0,note:"公式サイト確認"},
+  {carrier:"macaroon",name:"Macaroon特別キャンペーン",amount:0,note:"ベネフィットジャパン規定"}
+];
+
+// 選択状態（index → true/false）
+let CAMP_CHECKED = {};
+
+const CAMP_CLR = {
+  SoftBank:"#1A1A1A","Y!mobile":"#CC0022",UQ:"#0099CC",
+  au:"#FF6600",WiMAX:"#1E4C99",macaroon:"#7C3AED"
+};
+const CAMP_ICN = {
+  SoftBank:"⚫","Y!mobile":"🔴",UQ:"🔵",au:"🟠",WiMAX:"🌐",macaroon:"💜"
+};
+
+// ── キャンペーンカードをキャリアに絞って表示 ──────────────────
+// ── 全キャリアのキャンペーンを常に表示 ──────────────────────
+function buildCampUI() {
+  const card = document.getElementById('camp-card');
+  const list = document.getElementById('camp-check-list');
+
+  // 金額が入っているキャンペーンだけ対象
+  const allItems = CAMPS.map((c,i)=>({...c,idx:i})).filter(c=>c.name && c.amount>0);
+
+  if(allItems.length===0){
+    card.style.display='none';
+    return;
+  }
+
+  card.style.display='block';
+
+  // キャリアごとにグループ化して表示
+  const carriers = [...new Set(allItems.map(c=>c.carrier))];
+  list.innerHTML = carriers.map(carrier=>{
+    const items = allItems.filter(c=>c.carrier===carrier);
+    const color = CAMP_CLR[carrier]||'#333';
+    const icon  = CAMP_ICN[carrier]||'';
+    return `<div style="margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:700;color:#fff;background:${color};padding:4px 10px;border-radius:6px;margin-bottom:5px;display:inline-block;">
+        ${icon} ${carrier}
+      </div>
+      ${items.map(item=>{
+        const checked = !!CAMP_CHECKED[item.idx];
+        return `<div class="camp-check-item${checked?' checked':''}" onclick="toggleCampCheck(${item.idx})">
+          <div class="camp-check-box">${checked?'✓':''}</div>
+          <div class="camp-check-info">
+            <div class="camp-check-name">${item.name}</div>
+            ${item.note ? `<div class="camp-check-note">${item.note}</div>` : ''}
+          </div>
+          <div class="camp-check-amt" style="color:${checked?color:'var(--muted)'}">¥${item.amount.toLocaleString()}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+function toggleCampCheck(idx) {
+  CAMP_CHECKED[idx] = !CAMP_CHECKED[idx];
+  buildCampUI();
+  renderCampResult();
+}
+
+function toggleCamp() {
+  const body = document.getElementById('camp-body');
+  const tog  = document.getElementById('camp-toggle');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  tog.classList.toggle('open', !open);
+}
+
+// ── キャンペーン合計を施策合計の下に別表示 ───────────────────
+function renderCampResult() {
+  const wrap = document.getElementById('camp-result-wrap');
+
+  const selected = CAMPS.map((cp,i)=>({...cp,idx:i}))
+    .filter(cp=>CAMP_CHECKED[cp.idx] && cp.amount>0 && cp.name);
+
+  if(selected.length===0){ wrap.innerHTML=''; return; }
+
+  const campTotal = selected.reduce((s,cp)=>s+cp.amount,0);
+
+  wrap.innerHTML = `<div class="res-camp-card">
+    <div class="res-camp-label">🏆 オフィシャルキャンペーン合計</div>
+    <div class="res-camp-rows">
+      ${selected.map(cp=>{
+        const color = CAMP_CLR[cp.carrier]||'#1A3A6B';
+        const icon  = CAMP_ICN[cp.carrier]||'';
+        return `<div class="res-camp-row">
+          <span class="res-camp-row-name">${icon} ${cp.name}</span>
+          <span class="res-camp-row-amt" style="color:${color}">¥${cp.amount.toLocaleString()}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="res-camp-total">
+      <span class="res-camp-total-label">キャンペーン合計</span>
+      <span class="res-camp-total-amt">¥${campTotal.toLocaleString()}</span>
+    </div>
+  </div>`;
+}
+
+
+
+
+
+
+// renderResult後にキャンペーン結果を更新
+const _origRenderResult = renderResult;
+renderResult = function() {
+  _origRenderResult();
+  setTimeout(renderCampResult, 50);
+};
+
+// reset時はチェックをリセットしてカードを再描画
+const _origReset = reset;
+reset = function() {
+  _origReset();
+  CAMP_CHECKED = {};
+  document.getElementById('camp-result-wrap').innerHTML='';
+  buildCampUI();
+};
+
+// ページ読み込み時からキャンペーンカードを表示
+buildCampUI();
+
+// ════════════════════════════════════════════════════════════════
+// トレンド施策ランキング
+// ════════════════════════════════════════════════════════════════
+function buildTrend() {
+  const CARRIERS = ['Y!mobile','au','UQ'];
+  const ACQ_GROUPS = ['MNP','新規'];
+  const ACQ_LABEL = {'MNP':'🔄 MNP','新規':'🆕 新規'};
+  // SoftBank Airなど端末以外の特殊施策を除外するキーワード
+  const EXCLUDE_DEVICES = ['SoftBank Air'];
+
+  const body = document.getElementById('trend-body');
+
+  body.innerHTML = CARRIERS.map(carrier => {
+    const clr = CLR[carrier] || '#333';
+    const icn = ICN[carrier] || '';
+
+    const acqBlocks = ACQ_GROUPS.map(acq => {
+      const rows = P.filter(p =>
+        p.carrier === carrier &&
+        p.type !== 'SIM' &&
+        p.age === 'all' &&
+        p.acq === acq &&
+        !EXCLUDE_DEVICES.some(ex => (p.devices||[]).join('').includes(ex))
+      ).sort((a, b) => b.amount - a.amount);
+
+      // 同一機種の重複を除外（機種名ベース）
+      const seen = new Set();
+      const top3 = [];
+      for (const p of rows) {
+        const modelKey = (p.devices||[''])[0];
+        if (!seen.has(modelKey)) {
+          seen.add(modelKey);
+          top3.push(p);
+          if (top3.length >= 3) break;
+        }
+      }
+      if (top3.length === 0) return '';
+
+      const rankClass = ['rank1','rank2','rank3'];
+      const rankLabel = ['1st','2nd','3rd'];
+
+      return `<div class="trend-acq-block">
+        <div class="trend-acq-label">${ACQ_LABEL[acq]}</div>
+        <div class="trend-rows">
+          ${top3.map((p, i) => `
+            <div class="trend-row ${rankClass[i]}">
+              <div class="trend-rank">${rankLabel[i]}</div>
+              <div class="trend-info">
+                <div class="trend-model">${(p.devices||[''])[0]}</div>
+                <div class="trend-acq">${p.cat || ''}</div>
+              </div>
+              <div class="trend-amt" style="color:${clr}">¥${p.amount.toLocaleString()}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+
+    if (!acqBlocks.trim()) return '';
+
+    return `<div class="trend-carrier-block">
+      <div class="trend-carrier-label" style="background:${clr}">${icn} ${carrier}</div>
+      ${acqBlocks}
+    </div>`;
+  }).join('');
+}
+
+
+function toggleTrend() {
+  const body = document.getElementById('trend-body');
+  const btn  = document.getElementById('trend-toggle-btn');
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  btn.textContent = open ? '▼ 開く' : '▲ 閉じる';
+}
+// ページ読み込み時にランキング表示
+buildTrend();
+
+
+
+
+
+</script>
+
+<style>
+#pw-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0F1923;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#pw-overlay.hidden{display:none;}
+#pw-box{display:flex;gap:8px;}
+#pw-field{padding:10px 14px;border-radius:8px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:14px;outline:none;width:200px;}
+#pw-btn{padding:10px 18px;border-radius:8px;border:none;background:#1A3A6B;color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+#pw-err{font-size:11px;color:#FF6B6B;min-height:16px;}
+</style>
+<div id="pw-overlay">
+  <div style="font-size:28px;">🔒</div>
+  <div style="font-size:14px;font-weight:700;color:#fff;letter-spacing:.5px;">施策シミュレーター</div>
+  <div style="font-size:11px;color:rgba(255,255,255,.5);">スタッフ専用システム</div>
+  <div id="pw-box">
+    <input id="pw-field" type="password" placeholder="パスワードを入力" />
+    <button id="pw-btn">→</button>
+  </div>
+  <div id="pw-err"></div>
+</div>
+<script>
+(function(){
+  var PASS = "1234";
+  var overlay = document.getElementById('pw-overlay');
+  var field   = document.getElementById('pw-field');
+  var btn     = document.getElementById('pw-btn');
+  var err     = document.getElementById('pw-err');
+
+  // 認証済みなら即解除
+  if(sessionStorage.getItem('sim_auth')==='ok'){
+    overlay.classList.add('hidden');
+    return;
+  }
+
+  // フォーカス
+  setTimeout(function(){ field && field.focus(); }, 100);
+
+  // ボタンクリック
+  btn.addEventListener('click', function(){
+    if(field.value === PASS){
+      overlay.classList.add('hidden');
+      sessionStorage.setItem('sim_auth','ok');
+    } else {
+      err.textContent = 'パスワードが違います';
+      field.value = '';
+      field.focus();
+    }
+  });
+
+  // Enterキー
+  field.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') btn.click();
+  });
+})();
+</script>
+<style>
+#pw-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#0F1923;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+#pw-overlay.hidden{display:none;}
+#pw-box{display:flex;gap:8px;}
+#pw-field{padding:10px 14px;border-radius:8px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:14px;outline:none;width:200px;}
+#pw-btn{padding:10px 18px;border-radius:8px;border:none;background:#1A3A6B;color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+#pw-err{font-size:11px;color:#FF6B6B;min-height:16px;}
+</style>
+<div id="pw-overlay">
+  <div style="font-size:28px;">🔒</div>
+  <div style="font-size:14px;font-weight:700;color:#fff;letter-spacing:.5px;">施策シミュレーター</div>
+  <div style="font-size:11px;color:rgba(255,255,255,.5);">スタッフ専用システム</div>
+  <div id="pw-box">
+    <input id="pw-field" type="password" placeholder="パスワードを入力" />
+    <button id="pw-btn">→</button>
+  </div>
+  <div id="pw-err"></div>
+</div>
+<script>
+(function(){
+  var PASS = "1234";
+  var overlay = document.getElementById('pw-overlay');
+  var field   = document.getElementById('pw-field');
+  var btn     = document.getElementById('pw-btn');
+  var err     = document.getElementById('pw-err');
+
+  // 認証済みなら即解除
+  if(sessionStorage.getItem('sim_auth')==='ok'){
+    overlay.classList.add('hidden');
+    return;
+  }
+
+  // フォーカス
+  setTimeout(function(){ field && field.focus(); }, 100);
+
+  // ボタンクリック
+  btn.addEventListener('click', function(){
+    if(field.value === PASS){
+      overlay.classList.add('hidden');
+      sessionStorage.setItem('sim_auth','ok');
+    } else {
+      err.textContent = 'パスワードが違います';
+      field.value = '';
+      field.focus();
+    }
+  });
+
+  // Enterキー
+  field.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') btn.click();
+  });
+})();
+</script></body>
+</html>
